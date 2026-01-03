@@ -1,7 +1,7 @@
 **Lost-Found-System-using-C**
 A console-based Lost and Found Management System developed in C language. This program allows users to report lost and found items, view reports, and claim found items using a menu-driven interface.
 
-1. Features
+**Features**
 - Report lost items
 - Report found items
 - View lost items
