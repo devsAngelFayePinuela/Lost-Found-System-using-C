@@ -1,0 +1,201 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define maximum_report 100
+
+//Declare
+struct report {
+    char type[10];
+    char item[50];
+    char description[100];
+    char date[20];
+    char contact[20];
+    char claimDate[20];
+    
+    int quantity;
+};
+
+struct report reports[maximum_report];
+int reportcount = 0;
+
+void toLowerCase(char *str) {
+    int i;
+    for (i = 0; str[i]; i++) {
+        str[i] = tolower(str[i]);
+    }
+}
+
+void addReport(char *type) {
+    if (reportcount >= maximum_report) {
+        printf("There is no enough space.");
+        return;
+    }
+    
+    struct report Item;
+    strcpy(Item.type, type);
+    strcpy(Item.claimDate, "");
+    
+    getchar();
+    
+    printf("Enter item name: ");
+    fgets(Item.item, sizeof(Item.item), stdin);
+    Item.item[strcspn(Item.item, "\n")] = '\0';
+    
+    printf("Enter the description: ");
+    fgets(Item.description, sizeof(Item.description), stdin);
+    Item.description[strcspn(Item.description, "\n")] = '\0';
+    
+    printf("Enter the quantity: ");
+    scanf("%d", &Item.quantity);
+    getchar();
+    
+    printf("Enter the date [MM/DD/YYYY]: ");
+    fgets(Item.date, sizeof(Item.date), stdin);
+    Item.date[strcspn(Item.date, "\n")] = '\0';
+    
+    printf("Enter contact info: ");
+    fgets(Item.contact, sizeof(Item.contact), stdin);
+    Item.contact[strcspn(Item.contact, "\n")] = '\0';
+    
+    reports[reportcount] = Item;
+    reportcount++;
+    
+    printf("\n%s report added!\n", type);
+}
+
+void viewReports(char filter[]) {
+    int i, found = 0;
+    printf("\n=== Lists of %s Items ===\n\n", filter);
+    
+    for (i = 0; i < reportcount; i++) {
+        if (strcmp(reports[i].type, filter) == 0) {
+            printf("Item: %s\n", reports[i].item);
+            printf("Description: %s\n", reports[i].description);
+            printf("Quantity: %d\n", reports[i].quantity);
+            printf("Date went missing: %s\n", reports[i].date);
+            
+            if (strcmp(filter, "Claimed") == 0 && strlen(reports[i].claimDate) > 0) {
+                printf("Claimed Date: %s", reports[i].claimDate);
+            }
+            printf("\n\n");
+            
+            found = 1;
+        }
+    }
+    
+    if (!found) {
+        printf("\nNo %s items reported.\n\n", filter);
+    }
+}
+
+void claimItem() {
+    int i, found = 0;
+    char itemName[50];
+    char itemLower[50];
+    char reportLower[50];
+    char itemDate[50];
+    
+    printf("\n=== Found Items Info ===\n\n");
+    
+    for (i = 0; i < reportcount; i++) {
+        if (strcmp(reports[i].type, "Found") == 0) {
+            printf("Item: %s\n", reports[i].item);
+            printf("Description: %s\n", reports[i].description);
+            printf("Quantity: %d\n", reports[i].quantity);
+            printf("Date: %s\n\n", reports[i].date);
+            
+            found = 1;
+        }
+    }
+    
+    if (!found) {
+        printf("No found items available.\n");
+        return;
+    }
+    
+    printf("\nEnter item name to claim: ");
+    getchar();
+    fgets(itemName, sizeof(itemName), stdin);
+    itemName[strcspn(itemName, "\n")] = '\0';
+    
+    printf("Enter claim date [MM/DD/YYYY]: ");
+    fgets(itemDate, sizeof(itemDate), stdin);
+    itemDate[strcspn(itemDate, "\n")] = '\0';
+    
+    strcpy(itemLower, itemName);
+    toLowerCase(itemLower);
+    
+    for (i = 0; i < reportcount; i++) {
+        if (strcmp(reports[i].type, "Found") == 0) {
+            strcpy(reportLower, reports[i].item);
+            toLowerCase(reportLower);
+            
+            if (strcmp(reportLower, itemLower) == 0) {
+                strcpy(reports[i].type, "Claimed");
+                strcpy(reports[i].claimDate, itemDate);
+                printf("\nItem claimed successfully!\n");
+                return;
+            }
+        }
+    }
+    
+    printf("\nItem not found.\n");
+}
+
+int main() {
+    int choice;
+    
+    while (1) {
+        printf("\n=== Lost & Found Items ===\n");
+        printf("1. Report Lost Item\n");
+        printf("2. Report Found Item\n");
+        printf("3. View Lost Item\n");
+        printf("4. View Found Item\n");
+        printf("5. Claim Item\n");
+        printf("6. View Claimed Items\n");
+        printf("0. Exit\n");
+        
+        printf("\nEnter a choice: ");
+        
+        // Fixed input handling - clears buffer if scanf fails
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid choice. Please enter a number between #0-6.\n");
+            while (getchar() != '\n'); // Clear the input buffer
+            continue;
+        }
+        
+        switch (choice) {
+            case 0:
+                printf("Thank you!\n");
+                return 0;
+                
+            case 1: 
+                addReport("Lost");
+                break;
+                
+            case 2:
+                addReport("Found");
+                break;
+                
+            case 3:
+                viewReports("Lost");
+                break;
+                
+            case 4: 
+                viewReports("Found");
+                break;
+                
+            case 5:
+                claimItem();
+                break;
+                
+            case 6:
+                viewReports("Claimed");
+                break;
+            
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+}
